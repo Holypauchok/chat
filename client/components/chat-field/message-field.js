@@ -14,7 +14,7 @@ const MessageField = () => {
           return (
             <div className="flex" key={message.messageId}>
               <div className="w-auto pr-4">
-                [{format(new Date(message.time), 'MM/dd/yyyy H:m:s')}]
+                [{format(new Date(message.time), 'MM/dd/yyyy H:mm:ss')}]
               </div>
               <div className="w-auto pr-4 font-semibold">{message.user}:</div>
               <div><ReactMarkdown source={message.text} /></div>

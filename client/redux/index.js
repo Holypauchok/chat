@@ -31,12 +31,20 @@ if (typeof ENABLE_SOCKETS !== 'undefined' && ENABLE_SOCKETS) {
       store.dispatch(socketActions.connected)
     }
 
-    socket.onmessage = (message) => {
-      // eslint-disable-next-line no-console
-      console.log(message)
+      socket.onmessage = ({ data }) => {
+        // eslint-disable-next-line no-console
+        try {
+          const parsedData = JSON.parse(data)
 
-      // socket.close();
-    }
+          store.dispatch(parsedData)
+
+          // toast(parsedData.message)
+        } catch (err) {
+          console.log(err)
+        }
+
+        // socket.close();
+      }
 
     socket.onclose = () => {
       store.dispatch(socketActions.disconnected)

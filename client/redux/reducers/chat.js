@@ -1,3 +1,5 @@
+import { getSocket } from '..'
+
 const shortid = require('shortid')
 
 const CREATE_CHANNEL = 'CREATE_CHANNEL'
@@ -71,7 +73,7 @@ export default function (state = initialState, action) {
     case CREATE_CHANNEL: {
       return {
         ...state,
-        channels: [...state.channels, action.newChannel]
+        channels: Array.from(new Set([...state.channels, action.newChannel]))
       }
     }
     case UNSUBSCRIBE_TO_CHANNEL: {
@@ -84,16 +86,33 @@ export default function (state = initialState, action) {
       return { ...state, activeChannel: action.channel }
     }
     case SEND_MESSAGE: {
-      return {
-        ...state,
-        messages: {
-          ...state.messages,
-          [action.activeChannel]:
-            typeof state.messages[action.activeChannel] === 'undefined'
-              ? [action.message]
-              : [...state.messages[action.activeChannel], action.message]
+        return {
+          ...state,
+          messages: {
+            ...state.messages,
+            [action.activeChannel]:
+              typeof state.messages[action.activeChannel] === 'undefined'
+                ? [
+                    {
+                      text: action.text,
+                      user: action.email,
+                      time: action.time,
+                      id: action.id,
+                      meta: {}
+                    }
+                  ]
+                : [
+                    ...state.messages[action.activeChannel],
+                    {
+                      text: action.text,
+                      user: action.email,
+                      time: action.time,
+                      id: action.id,
+                      meta: {}
+                    }
+                  ]
+          }
         }
-      }
     }
     default:
       return state
@@ -128,17 +147,34 @@ export function changeActiveChannel(channel) {
   return { type: CHANGE_ACTIVE_CHANNEL, channel }
 }
 
-export function sendMessages(text) {
-  return (dispatch, getState) => {
-    const { activeChannel } = getState().chat
-    const { email } = getState().auth.user
-    const message = {
-      messageId: shortid.generate(),
-      user: email,
-      text,
-      time: +new Date(),
-      meta: {}
+
+export function sendMessage(text) {
+    return (dispatch, getState) => {
+      const { activeChannel } = getState().chat
+      const { email } = getState().auth.user
+      getSocket().send(
+        JSON.stringify({
+          type: SEND_MESSAGE,
+          id: shortid.generate(),
+          text,
+          activeChannel,
+          email,
+          time: +new Date(),
+          meta: {}
+        })
+      )
     }
-    dispatch({ type: SEND_MESSAGE, activeChannel, message })
+}
+
+export function sendMesageToChannel({ message, id, channel, time, email }) {
+  return (dispatch) => {
+    dispatch({
+      type: SEND_MESSAGE,
+      id,
+      message,
+      activeChannel: channel,
+      email,
+      time
+    })
   }
 }

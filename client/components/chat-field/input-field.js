@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { sendMessages } from '../../redux/reducers/chat'
+import { sendMessage} from '../../redux/reducers/chat'
 
 const InputField = () => {
   const [message, setMessage] = useState('')
@@ -17,7 +17,7 @@ const InputField = () => {
       />
       <button
         onClick={() => {
-          dispatch(sendMessages(message))
+          dispatch(sendMessage(message))
           setMessage('')
         }}
         type="button"
